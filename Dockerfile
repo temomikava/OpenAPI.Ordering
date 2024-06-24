@@ -9,6 +9,8 @@ WORKDIR /src
 
 # Copy the .csproj file and restore dependencies
 COPY ["OpenAPI.Ordering/OpenAPI.Ordering/OpenAPI.Ordering.csproj", "OpenAPI.Ordering/OpenAPI.Ordering/"]
+COPY ["OpenAPI.Ordering/Contracts/IntegrationEvents.csproj", "Contracts/"]
+COPY ["OpenAPI.Ordering/SharedKernel/SharedKernel.csproj", "SharedKernel/"]
 RUN dotnet restore "OpenAPI.Ordering/OpenAPI.Ordering/OpenAPI.Ordering.csproj"
 
 # Copy the entire project and build it
