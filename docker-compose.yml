@@ -1,19 +1,21 @@
 ﻿services:
-  webapi:
+  orderingapi:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "5000:80"
+      - "5002:80"
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=OpenApi.Ordering;Username=tmikava;Password=Npottwyctd12
-    networks:
-      - app-network
+      - RabbitMq__Hostname=rabbitmq
+      - RabbitMq__Port=5672
+      - RabbitMq__UserName=tmikava
+      - RabbitMq__Password=Npottwyctd12
 
 networks:
   app-network:
-    driver: bridge
+    external: true
 
 
 
