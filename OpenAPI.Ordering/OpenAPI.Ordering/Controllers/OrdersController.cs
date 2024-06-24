@@ -19,48 +19,56 @@ namespace OpenAPI.Ordering.Controllers
             this.companiesRepo = companiesRepo;
             this.ordersRepo = ordersRepo;
         }
-        // GET: api/<OrdersController>
         [HttpGet]
-        public async Task<List<Order>> Get(CancellationToken token)
+        public async Task<IActionResult> Get([FromHeader] string apikey, [FromHeader] string apiSecret, CancellationToken token)
         {
-            return await ordersRepo.GetAllAsync(token);
+            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
+            if (company == null)
+            {
+                return Unauthorized();
+            }
+            var orders = await ordersRepo.GetAllAsync(x => x.CompanyId == company.Id, token);
+            return Ok(orders);
         }
 
-        // GET api/<OrdersController>/5
         [HttpGet("{id}")]
-        public string Get(int id)
+        public async Task<IActionResult> Get([FromHeader] string apikey, [FromHeader] string apiSecret, int OrderId, CancellationToken token)
         {
-            return "value";
+            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
+            if (company != null)
+            {
+                var order = await ordersRepo.GetByIdAsync(OrderId);
+                if (order is null)
+                {
+                    return NotFound();
+                }
+                if (order.CompanyId != company.Id)
+                {
+                    return Forbid();
+                }
+                return Ok(order);
+            }
+
+            return Unauthorized();
         }
 
-        // POST api/<OrdersController>
         [HttpPost]
         public async Task<IActionResult> Post([FromHeader] string apikey, [FromHeader] string apiSecret, [FromBody] CreateOrderCommand command, CancellationToken token)
         {
-            var isAuthenticated = await companiesRepo.AnyAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
-            if (isAuthenticated)
+            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
+            if (company is not null)
             {
                 var order = new Order
                 {
                     Amount = command.Amount,
-                    Currency = command.Currency
+                    Currency = command.Currency,
+                    CompanyId = company.Id,
+                    Status = OrderStatus.Draft                   
                 };
                 await ordersRepo.CreateAsync(order);
                 return Ok(order.Id);
             }
             return Unauthorized();
-        }
-
-        // PUT api/<OrdersController>/5
-        [HttpPut("{id}")]
-        public void Put(int id, [FromBody] string value)
-        {
-        }
-
-        // DELETE api/<OrdersController>/5
-        [HttpDelete("{id}")]
-        public void Delete(int id)
-        {
         }
     }
 }

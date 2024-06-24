@@ -14,11 +14,6 @@ namespace OpenAPI.Identity.Data
             _context = context;
         }
 
-        public async Task<bool> AnyAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token)
-        {
-            return await _context.Set<TEntity>().AnyAsync(predicate, token);
-        }
-
         public async Task<TEntity> CreateAsync(TEntity entity)
         {
             await _context.AddAsync(entity);
@@ -26,14 +21,19 @@ namespace OpenAPI.Identity.Data
             return entity;
         }
 
-        public async Task<List<TEntity>> GetAllAsync(CancellationToken token)
+        public async Task<List<TEntity>> GetAllAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token)
         {
-            return await _context.Set<TEntity>().ToListAsync(token);
+            return await _context.Set<TEntity>().Where(predicate).ToListAsync(token);
         }
 
         public async Task<TEntity?> GetByIdAsync(TId id)
         {
             return await _context.Set<TEntity>().FindAsync(id);
+        }
+
+        public async Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token)
+        {
+            return await _context.Set<TEntity>().SingleOrDefaultAsync(predicate, token);
         }
     }
 }
