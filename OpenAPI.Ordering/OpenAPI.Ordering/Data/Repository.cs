@@ -5,7 +5,7 @@ using System.Linq.Expressions;
 
 namespace OpenAPI.Identity.Data
 {
-    public class Repository<TEntity, TId> : IRepository<TEntity,TId> where TEntity : class
+    public class Repository<TEntity, TId> : IRepository<TEntity, TId> where TEntity : class
     {
         private readonly ApplicationDbContext _context;
 
@@ -34,6 +34,12 @@ namespace OpenAPI.Identity.Data
         public async Task<TEntity?> SingleOrDefaultAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken token)
         {
             return await _context.Set<TEntity>().SingleOrDefaultAsync(predicate, token);
+        }
+
+        public Task UpdateAsync(TEntity entity)
+        {
+            _context.Set<TEntity>().Update(entity);
+            return Task.CompletedTask;
         }
     }
 }
