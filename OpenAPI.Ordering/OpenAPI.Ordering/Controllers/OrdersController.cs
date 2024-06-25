@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using IntegrationEvents;
+using Microsoft.AspNetCore.Mvc;
 using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering.Dtos;
 using SharedKernel;
@@ -12,13 +13,14 @@ namespace OpenAPI.Ordering.Controllers
     public class OrdersController : ControllerBase
     {
         private readonly IRepository<Order, int> ordersRepo;
-
+        private readonly IIntegrationEventService integrationEventService;
         private readonly IRepository<Company, int> companiesRepo;
 
-        public OrdersController(IRepository<Company, int> companiesRepo,IRepository<Order,int> ordersRepo)
+        public OrdersController(IRepository<Company, int> companiesRepo, IRepository<Order, int> ordersRepo, IIntegrationEventService integrationEventService)
         {
             this.companiesRepo = companiesRepo;
             this.ordersRepo = ordersRepo;
+            this.integrationEventService = integrationEventService;
         }
         [HttpGet]
         public async Task<IActionResult> Get([FromHeader] string apikey, [FromHeader] string apiSecret, CancellationToken token)
@@ -68,6 +70,13 @@ namespace OpenAPI.Ordering.Controllers
                     CreatedAt = DateTimeOffset.UtcNow
                 };
                 await ordersRepo.CreateAsync(order);
+                await integrationEventService.AddEventAsync(new OrderCreatedIntegrationEvent
+                {
+                    OrderId = order.Id,
+                    Amount = command.Amount,
+                    Currency = command.Currency
+                });
+                await integrationEventService.PublishEventsAsync(Guid.NewGuid(), token);
                 return Ok(order.Id);
             }
             return Unauthorized();
