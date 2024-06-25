@@ -8,8 +8,8 @@ namespace OpenAPI.Ordering.Validators
         public PayOrderCommandValidator()
         {
             RuleFor(x => x.CardNumber)
-            .CreditCard().WithMessage("Invalid card number format. A valid card number is required.")
-            .NotEmpty().WithMessage("Card number is required. Example format: 1234-5678-9012-3456");
+            .NotEmpty().WithMessage("Card number is required.")
+            .Matches(@"^\d{16}$").WithMessage("Card number must be exactly 16 digits.");
 
             RuleFor(x => x.ExpiryDate)
                 .NotEmpty().WithMessage("Expiry date is required. Example format: MM/yyyy")
