@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Dtos;
 using SharedKernel;
 
 // For more information on enabling Web API for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
@@ -28,16 +29,16 @@ namespace OpenAPI.Ordering.Controllers
                 return Unauthorized();
             }
             var orders = await ordersRepo.GetAllAsync(x => x.CompanyId == company.Id, token);
-            return Ok(orders);
+            return Ok(orders.Select(order => new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId)));
         }
 
         [HttpGet("{id}")]
-        public async Task<IActionResult> Get([FromHeader] string apikey, [FromHeader] string apiSecret, int OrderId, CancellationToken token)
+        public async Task<IActionResult> Get([FromHeader] string apikey, [FromHeader] string apiSecret, int id, CancellationToken token)
         {
             var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
             if (company != null)
             {
-                var order = await ordersRepo.GetByIdAsync(OrderId);
+                var order = await ordersRepo.GetByIdAsync(id);
                 if (order is null)
                 {
                     return NotFound();
@@ -46,7 +47,7 @@ namespace OpenAPI.Ordering.Controllers
                 {
                     return Forbid();
                 }
-                return Ok(order);
+                return Ok(new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId));
             }
 
             return Unauthorized();

@@ -9,6 +9,7 @@ namespace OpenAPI.Identity.Data
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
+            this.ChangeTracker.LazyLoadingEnabled = false;
         }
 
         public DbSet<Company> Companies { get; set; }
