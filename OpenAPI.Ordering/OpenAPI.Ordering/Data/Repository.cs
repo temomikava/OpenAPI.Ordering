@@ -36,10 +36,10 @@ namespace OpenAPI.Identity.Data
             return await _context.Set<TEntity>().SingleOrDefaultAsync(predicate, token);
         }
 
-        public Task UpdateAsync(TEntity entity)
+        public async Task UpdateAsync(TEntity entity)
         {
             _context.Set<TEntity>().Update(entity);
-            return Task.CompletedTask;
+            await _context.SaveChangesAsync();
         }
     }
 }
