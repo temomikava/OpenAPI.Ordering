@@ -8,5 +8,6 @@
         public OrderStatus Status { get; set; }
         public Company Company { get; set; }
         public int CompanyId { get; set; }
+        public DateTimeOffset CreatedAt { get; set; }
     }
 }

@@ -29,7 +29,7 @@ namespace OpenAPI.Ordering.Controllers
                 return Unauthorized();
             }
             var orders = await ordersRepo.GetAllAsync(x => x.CompanyId == company.Id, token);
-            return Ok(orders.Select(order => new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId)));
+            return Ok(orders.Select(order => new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId, order.CreatedAt)));
         }
 
         [HttpGet("{id}")]
@@ -47,7 +47,7 @@ namespace OpenAPI.Ordering.Controllers
                 {
                     return Forbid();
                 }
-                return Ok(new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId));
+                return Ok(new OrderDto(order.Id, order.Amount, order.Currency, order.Status, order.CompanyId, order.CreatedAt));
             }
 
             return Unauthorized();
@@ -64,7 +64,8 @@ namespace OpenAPI.Ordering.Controllers
                     Amount = command.Amount,
                     Currency = command.Currency,
                     CompanyId = company.Id,
-                    Status = OrderStatus.Draft                   
+                    Status = OrderStatus.Draft,
+                    CreatedAt = DateTimeOffset.UtcNow
                 };
                 await ordersRepo.CreateAsync(order);
                 return Ok(order.Id);
