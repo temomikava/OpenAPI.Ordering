@@ -1,4 +1,6 @@
-﻿namespace OpenAPI.Ordering.Data
+﻿using OpenAPI.Ordering.Enums;
+
+namespace OpenAPI.Ordering.Data
 {
     public class Order
     {

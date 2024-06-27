@@ -1,8 +1,9 @@
 ﻿using MassTransit;
 using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Enums;
 using SharedKernel;
 
-namespace OpenAPI.Ordering
+namespace OpenAPI.Ordering.Services
 {
     public class OrderComputationConsumer : IIntegrationEventHandler<OrderComputationEvent>
     {

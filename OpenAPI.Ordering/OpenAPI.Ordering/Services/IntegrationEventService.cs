@@ -2,7 +2,7 @@
 using MassTransit;
 using SharedKernel;
 
-namespace OpenAPI.Identity
+namespace OpenAPI.Ordering.Services
 {
     public class IntegrationEventService : IIntegrationEventService
     {

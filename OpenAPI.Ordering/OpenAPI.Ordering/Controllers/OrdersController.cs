@@ -3,8 +3,11 @@ using MassTransit;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using OpenAPI.Ordering.Commands;
 using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering.Dtos;
+using OpenAPI.Ordering.Enums;
+using OpenAPI.Ordering.Services;
 using SharedKernel;
 using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
 

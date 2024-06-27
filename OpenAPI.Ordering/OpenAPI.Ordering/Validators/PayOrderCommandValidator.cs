@@ -1,4 +1,5 @@
 ﻿using FluentValidation;
+using OpenAPI.Ordering.Commands;
 using System.Globalization;
 
 namespace OpenAPI.Ordering.Validators
@@ -19,7 +20,6 @@ namespace OpenAPI.Ordering.Validators
         {
             if (DateTime.TryParseExact(expiryDate, "MM/yyyy", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date))
             {
-                // Set the day to the last day of the month to compare with current date
                 var lastDayOfMonth = DateTime.DaysInMonth(date.Year, date.Month);
                 var expiryDateWithDay = new DateTime(date.Year, date.Month, lastDayOfMonth);
                 return expiryDateWithDay > DateTime.Now;

@@ -1,4 +1,6 @@
-﻿namespace OpenAPI.Ordering
+﻿using OpenAPI.Ordering.Enums;
+
+namespace OpenAPI.Ordering
 {
     public class ComputationResult
     {

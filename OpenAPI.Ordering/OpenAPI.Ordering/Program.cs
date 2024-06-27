@@ -3,11 +3,11 @@ using FluentValidation.AspNetCore;
 using MassTransit;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
-using OpenAPI.Identity;
 using OpenAPI.Identity.Data;
-using OpenAPI.Ordering;
 using OpenAPI.Ordering.Configurations;
+using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering.IntegrationEventHandlers;
+using OpenAPI.Ordering.Services;
 using SharedKernel;
 using System.Reflection;
 

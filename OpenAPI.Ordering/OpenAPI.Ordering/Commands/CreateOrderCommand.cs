@@ -1,4 +1,4 @@
-﻿namespace OpenAPI.Ordering
+﻿namespace OpenAPI.Ordering.Commands
 {
     public class CreateOrderCommand
     {

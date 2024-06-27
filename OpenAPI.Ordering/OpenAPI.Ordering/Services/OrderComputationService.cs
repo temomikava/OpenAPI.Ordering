@@ -1,9 +1,10 @@
 ﻿using OpenAPI.Identity.Data;
 using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Enums;
 using SharedKernel;
 using System;
 
-namespace OpenAPI.Ordering
+namespace OpenAPI.Ordering.Services
 {
     public class OrderComputationService
     {

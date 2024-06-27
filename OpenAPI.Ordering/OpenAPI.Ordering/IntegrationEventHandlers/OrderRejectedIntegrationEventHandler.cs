@@ -1,6 +1,7 @@
 ﻿using IntegrationEvents;
 using MassTransit;
 using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Enums;
 using SharedKernel;
 
 namespace OpenAPI.Ordering.IntegrationEventHandlers

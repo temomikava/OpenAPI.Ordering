@@ -3,6 +3,7 @@ using MassTransit;
 using Microsoft.Extensions.Logging;
 using OpenAPI.Identity.Data;
 using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Enums;
 using SharedKernel;
 
 namespace OpenAPI.Ordering.IntegrationEventHandlers

@@ -1,8 +1,8 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using OpenAPI.Identity.Data;
-using OpenAPI.Ordering.Data;
+using OpenAPI.Ordering.Enums;
 
-namespace OpenAPI.Ordering
+namespace OpenAPI.Ordering.Data
 {
     public class OrderRepository : Repository<Order, int>, IOrderRepository
     {
