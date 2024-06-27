@@ -7,6 +7,7 @@ using OpenAPI.Identity.Data;
 using OpenAPI.Ordering.Configurations;
 using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering.IntegrationEventHandlers;
+using OpenAPI.Ordering.RateLimiting;
 using OpenAPI.Ordering.Services;
 using SharedKernel;
 using System.Reflection;
@@ -53,6 +54,7 @@ builder.Services.AddScoped<IIntegrationEventService,IntegrationEventService>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 builder.Services.AddScoped<OrderComputationService>();
+builder.Services.AddMemoryCache();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -62,6 +64,14 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+var rateLimitOptions = new RateLimitOptions
+{
+    Limit = 10, 
+    Period = TimeSpan.FromMinutes(1) 
+};
+
+app.UseMiddleware<RateLimitMiddleware>(rateLimitOptions);
+
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
@@ -69,6 +79,6 @@ app.UseAuthorization();
 app.MapControllers();
 await using (var scope = app.Services.CreateAsyncScope())
 {
-    await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
+    //await scope.ServiceProvider.GetRequiredService<ApplicationDbContext>().Database.MigrateAsync();
 }
 app.Run();
