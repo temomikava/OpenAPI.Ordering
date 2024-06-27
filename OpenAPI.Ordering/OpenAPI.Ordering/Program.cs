@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using OpenAPI.Identity;
 using OpenAPI.Identity.Data;
+using OpenAPI.Ordering;
 using OpenAPI.Ordering.IntegrationEventHandlers;
 using SharedKernel;
 using System.Reflection;
@@ -48,6 +49,7 @@ builder.Services.AddMassTransit(configuration =>
 
 builder.Services.AddScoped<IIntegrationEventService,IntegrationEventService>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
+builder.Services.AddScoped<IOrderRepository, OrderRepository>();
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

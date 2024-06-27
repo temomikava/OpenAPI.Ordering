@@ -1,5 +1,6 @@
 ﻿using IntegrationEvents;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering.Dtos;
 using SharedKernel;
@@ -13,11 +14,11 @@ namespace OpenAPI.Ordering.Controllers
     [ApiController]
     public class OrdersController : ControllerBase
     {
-        private readonly IRepository<Order, int> ordersRepo;
+        private readonly IOrderRepository ordersRepo;
         private readonly IIntegrationEventService integrationEventService;
         private readonly IRepository<Company, int> companiesRepo;
 
-        public OrdersController(IRepository<Company, int> companiesRepo, IRepository<Order, int> ordersRepo, IIntegrationEventService integrationEventService)
+        public OrdersController(IRepository<Company, int> companiesRepo, IOrderRepository ordersRepo, IIntegrationEventService integrationEventService)
         {
             this.companiesRepo = companiesRepo;
             this.ordersRepo = ordersRepo;
@@ -70,7 +71,7 @@ namespace OpenAPI.Ordering.Controllers
                 {
                     return Forbid();
                 }
-                
+
                 await integrationEventService.AddEventAsync(new OrderProcessingIntegrationEvent
                 {
                     OrderId = command.OrderId,
@@ -91,8 +92,16 @@ namespace OpenAPI.Ordering.Controllers
         public async Task<IActionResult> PostAsync([FromHeader] string apikey, [FromHeader] string apiSecret, [FromBody] CreateOrderCommand command, CancellationToken token)
         {
             var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
+
             if (company is not null)
             {
+                var totalAmount = await ordersRepo.GetTotalAmountForCompletedOrdersAsync(company.Id, DateTime.UtcNow);
+
+                if (totalAmount + command.Amount > 10000)
+                {
+                    return BadRequest("Daily order limit exceeded");
+                }
+
                 var order = new Order
                 {
                     Amount = command.Amount,
@@ -105,6 +114,11 @@ namespace OpenAPI.Ordering.Controllers
                 return Ok(order.Id);
             }
             return Unauthorized();
+        }
+        [HttpGet("compute")]
+        public async Task<IActionResult> ComputeOrdersAsync([FromHeader] string apiKey, [FromHeader] string apiSecret)
+        {
+            return Ok();
         }
     }
 }
