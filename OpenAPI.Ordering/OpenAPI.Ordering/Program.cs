@@ -6,6 +6,7 @@ using Microsoft.EntityFrameworkCore;
 using OpenAPI.Identity;
 using OpenAPI.Identity.Data;
 using OpenAPI.Ordering;
+using OpenAPI.Ordering.Configurations;
 using OpenAPI.Ordering.IntegrationEventHandlers;
 using SharedKernel;
 using System.Reflection;
@@ -36,12 +37,13 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddMassTransit(configuration =>
 {
     configuration.AddConsumers(typeof(CompanyRegisteredIntegrationEventHandler).Assembly);
+    var rabbitmqConfig = builder.Configuration.GetSection(nameof(RabbitmqConfig)).Get<RabbitmqConfig>();
     configuration.UsingRabbitMq((context, cfg) =>
     {
-        cfg.Host("rabbitmq", "/", h =>
+        cfg.Host(rabbitmqConfig.Host, "/", h =>
         {
-            h.Username("tmikava");
-            h.Password("Npottwyctd12");
+            h.Username(rabbitmqConfig.UserName);
+            h.Password(rabbitmqConfig.Password);
         });
         cfg.ConfigureEndpoints(context);
     });
