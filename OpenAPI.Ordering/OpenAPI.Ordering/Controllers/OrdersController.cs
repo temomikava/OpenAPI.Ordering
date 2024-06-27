@@ -1,4 +1,5 @@
 ﻿using IntegrationEvents;
+using MassTransit;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenAPI.Ordering.Data;
@@ -16,13 +17,17 @@ namespace OpenAPI.Ordering.Controllers
     {
         private readonly IOrderRepository ordersRepo;
         private readonly IIntegrationEventService integrationEventService;
+        private readonly OrderComputationService computationService;
         private readonly IRepository<Company, int> companiesRepo;
+        private readonly IRepository<ComputationResult, int> computationRepo;
 
-        public OrdersController(IRepository<Company, int> companiesRepo, IOrderRepository ordersRepo, IIntegrationEventService integrationEventService)
+        public OrdersController(IRepository<Company, int> companiesRepo, IOrderRepository ordersRepo, IIntegrationEventService integrationEventService, OrderComputationService computationService, IRepository<ComputationResult, int> computationRepo)
         {
             this.companiesRepo = companiesRepo;
             this.ordersRepo = ordersRepo;
             this.integrationEventService = integrationEventService;
+            this.computationService = computationService;
+            this.computationRepo = computationRepo;
         }
         [HttpGet]
         public async Task<IActionResult> GetAsync([FromHeader] string apikey, [FromHeader] string apiSecret, CancellationToken token)
@@ -116,9 +121,37 @@ namespace OpenAPI.Ordering.Controllers
             return Unauthorized();
         }
         [HttpGet("compute")]
-        public async Task<IActionResult> ComputeOrdersAsync([FromHeader] string apiKey, [FromHeader] string apiSecret)
+        public async Task<IActionResult> ComputeOrdersAsync([FromHeader] string apiKey, [FromHeader] string apiSecret, CancellationToken token)
         {
-            return Ok();
+            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apiKey && x.APISecret == apiSecret, token);
+            if (company is not null)
+            {
+                var orders = await ordersRepo.GetAllAsync(x => x.CompanyId == company.Id && x.Status == OrderStatus.Completed, token);
+                var taskId = computationService.QueueOrderComputation(orders, token);
+                return Ok(new { TaskId = taskId });
+            }
+            return NotFound();
+        }
+
+        [HttpGet("compute/status/{taskId}")]
+        public async Task<IActionResult> GetComputationStatusAsync(string taskId, CancellationToken token)
+        {
+            var result = await computationRepo.SingleOrDefaultAsync(x => x.TaskId == taskId, token);
+            if (result == null)
+            {
+                return NotFound();
+            }
+
+            if (result.Status == ComputationResultStatus.Pending)
+            {
+                return Ok(new { Message = "Task is not completed yet." });
+            }
+            else if (result.Status == ComputationResultStatus.Completed)
+            {
+                return Ok(new { TaskId = result.TaskId, Result = result.Result });
+            }
+
+            return StatusCode(500, "Unexpected status value");
         }
     }
 }
