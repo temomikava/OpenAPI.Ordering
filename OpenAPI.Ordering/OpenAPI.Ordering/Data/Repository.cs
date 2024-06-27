@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SharedKernel;
-using System;
 using System.Linq.Expressions;
 
 namespace OpenAPI.Identity.Data

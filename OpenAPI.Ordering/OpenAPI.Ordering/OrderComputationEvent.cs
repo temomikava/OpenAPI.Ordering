@@ -1,5 +1,4 @@
-﻿using OpenAPI.Ordering.Data;
-using SharedKernel;
+﻿using SharedKernel;
 
 namespace OpenAPI.Ordering
 {

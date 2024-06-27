@@ -1,6 +1,4 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory.Database;
-using System;
 using OpenAPI.Ordering.Data;
 using OpenAPI.Ordering;
 
