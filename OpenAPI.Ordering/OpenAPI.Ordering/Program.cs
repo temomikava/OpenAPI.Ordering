@@ -50,8 +50,6 @@ builder.Services.AddMassTransit(configuration =>
 builder.Services.AddScoped<IIntegrationEventService,IntegrationEventService>();
 builder.Services.AddScoped(typeof(IRepository<,>), typeof(Repository<,>));
 builder.Services.AddScoped<IOrderRepository, OrderRepository>();
-builder.Services.AddSingleton<IComputationQueue, ComputationQueue>();
-builder.Services.AddHostedService<BackgroundOrderComputationService>();
 builder.Services.AddScoped<OrderComputationService>();
 var app = builder.Build();
 

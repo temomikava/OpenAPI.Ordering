@@ -7,16 +7,16 @@ namespace OpenAPI.Ordering
 {
     public class OrderComputationService
     {
-        private readonly IComputationQueue _computationQueue;
-        private readonly IRepository<ComputationResult,int> _computationRepository;
+        private readonly IRepository<ComputationResult, int> _computationRepository;
+        private readonly IIntegrationEventService _integrationEventService;
 
-        public OrderComputationService(IComputationQueue computationQueue, IRepository<ComputationResult,int> computationRepo)
+        public OrderComputationService(IRepository<ComputationResult, int> computationRepository, IIntegrationEventService integrationEventService)
         {
-            _computationQueue = computationQueue;
-            _computationRepository = computationRepo;
+            _computationRepository = computationRepository;
+            _integrationEventService = integrationEventService;
         }
 
-        public async Task<string> QueueOrderComputation(List<Order> orders, CancellationToken token)
+        public async Task<string> QueueOrderComputationAsync(int companyId, CancellationToken token)
         {
             var taskId = Guid.NewGuid().ToString();
             var computationResult = new ComputationResult
@@ -26,24 +26,15 @@ namespace OpenAPI.Ordering
             };
             await _computationRepository.CreateAsync(computationResult);
 
-            _computationQueue.QueueBackgroundWorkItem(async token =>
+            var orderComputationEvent = new OrderComputationEvent
             {
-                var result = await ComputeOrdersAsync(orders, token);
-                var existingResult = await _computationRepository.SingleOrDefaultAsync(x => x.TaskId == taskId, token);
-                if (existingResult != null)
-                {
-                    existingResult.Result = result;
-                    existingResult.Status = ComputationResultStatus.Completed;
-                }
-            });
+                TaskId = taskId,
+                CompanyId = companyId
+            };
+            await _integrationEventService.AddEventAsync(orderComputationEvent);
+            await _integrationEventService.PublishEventsAsync(Guid.NewGuid(), token);
 
             return taskId;
-        }
-
-        private async Task<decimal?> ComputeOrdersAsync(List<Order> orders, CancellationToken token)
-        {
-            await Task.Delay(TimeSpan.FromMinutes(2), token); // Simulate heavy computation
-            return orders?.Sum(x => x.Amount);
         }
     }
 }

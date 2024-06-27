@@ -1,5 +1,6 @@
 ﻿using IntegrationEvents;
 using MassTransit;
+using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using OpenAPI.Ordering.Data;
@@ -120,38 +121,34 @@ namespace OpenAPI.Ordering.Controllers
             }
             return Unauthorized();
         }
-        [HttpGet("compute")]
-        public async Task<IActionResult> ComputeOrdersAsync([FromHeader] string apiKey, [FromHeader] string apiSecret, CancellationToken token)
+        [HttpPost("compute")]
+        public async Task<IActionResult> ComputeOrdersAsync([FromHeader] string apikey, [FromHeader] string apiSecret, CancellationToken token)
         {
-            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apiKey && x.APISecret == apiSecret, token);
+            var company = await companiesRepo.SingleOrDefaultAsync(x => x.APIKey == apikey && x.APISecret == apiSecret, token);
             if (company is not null)
             {
-                var orders = await ordersRepo.GetAllAsync(x => x.CompanyId == company.Id && x.Status == OrderStatus.Completed, token);
-                var taskId = computationService.QueueOrderComputation(orders, token);
+                var taskId = await computationService.QueueOrderComputationAsync(company.Id, token);
                 return Ok(new { TaskId = taskId });
             }
-            return NotFound();
+            return Unauthorized();
         }
 
-        [HttpGet("compute/status/{taskId}")]
-        public async Task<IActionResult> GetComputationStatusAsync(string taskId, CancellationToken token)
+        [HttpGet("status/{taskId}")]
+        public async Task<IActionResult> GetTaskStatus(string taskId, CancellationToken token)
         {
             var result = await computationRepo.SingleOrDefaultAsync(x => x.TaskId == taskId, token);
-            if (result == null)
+            if (result != null)
             {
-                return NotFound();
+                if (result.Status == ComputationResultStatus.Completed)
+                {
+                    return Ok(new { Status = "Completed", Result = result.Result });
+                }
+                else
+                {
+                    return Ok(new { Status = "Pending" });
+                }
             }
-
-            if (result.Status == ComputationResultStatus.Pending)
-            {
-                return Ok(new { Message = "Task is not completed yet." });
-            }
-            else if (result.Status == ComputationResultStatus.Completed)
-            {
-                return Ok(new { TaskId = result.TaskId, Result = result.Result });
-            }
-
-            return StatusCode(500, "Unexpected status value");
+            return NotFound();
         }
     }
 }
